@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -630,7 +630,7 @@ class npc_absolute_zero : public CreatureScript
                 creature->SetSpeed(MOVE_WALK, 0.5f);
             }
 
-            uint32 uiPauseTimer; //÷òîáû íå ñðàáàòûâàëî ñðàçó ïðè ñàììîíå âîçëå èãðîêà
+            uint32 uiPauseTimer; //é»©é’º?ç¤¤ è€©å™Œå›¹îŽåš¯?è€©å™»?é•³?è¥¦ç¥†é“?å¿¸ç‰?æ¡¡ç—¤èµ…
             uint32 uiDespawnTimer;
             bool bCanExplode; 
 
@@ -718,7 +718,7 @@ class npc_magma_jet : public CreatureScript
                     Position newPos;
                     me->GetNearPosition(newPos, 5.5f, 0.0f);
                     me->NearTeleportTo(newPos.GetPositionX(), newPos.GetPositionY(), me->GetPositionZ(), me->GetOrientation());
-                    if (creOwner->GetDistance(me) >= 50.0f) // ñïàâíèòü ðàçëîìû íà ðàññòîÿíèè äî 50 îò áîññà
+                    if (creOwner->GetDistance(me) >= 50.0f) // è€§å™”é¾›èž¯ ç–£ç‰é“Ž?ç£¬ ç–£è€¨è¾ï£µé¾›?æ¼• 50 é“— çŠ·è€¨?
                         me->DespawnOrUnsummon();
                     else
                     {

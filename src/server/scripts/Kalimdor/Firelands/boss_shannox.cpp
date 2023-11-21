@@ -1,4 +1,4 @@
-/*
+п»ї/*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -106,11 +106,11 @@ enum Other
 
 enum AreaIds
 {
-    AREA_1          = 5764, // Логово Бет'тилак
-    AREA_2          = 5821, // Порочный путь
-    AREA_3          = 5766, // Каменный Венец
-    AREA_4          = 5791, // Гряда Древнего Пламени
-    AREA_5          = 5765, // Огненный портал
+    AREA_1          = 5764, // зҐџжіђеїё й“ѓ?ињ©и±љ?
+    AREA_2          = 5821, // йЎ№з—¤й»њоЋ– зџ¬ићЇ
+    AREA_3          = 5766, // жћўж€ѕзњ„оЋ– жґ›з¤¤?
+    AREA_4          = 5791, // зЃ­пЈµжє§ й…їй‚‚з¤¤жіђ жѓіе›”е±™?
+    AREA_5          = 5765, // жЇ‹з¤¤зњ„оЋ– й•±з—±ељЇ
 };
 
 const uint32 CriteriaWorldStates[5]

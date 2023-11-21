@@ -1,4 +1,4 @@
-/*
+п»ї/*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -19,7 +19,7 @@
 #include "deadmines.h"
 #include "Vehicle.h"
 
-// todo: реализовать прыжки хеликса, сделать получше бомбы
+// todo: з–±ељЇжЎ¤й’је›№?й•іоЋ“и§‡ и№‚и…“зЉџ? зљІе’«е›№?й•±еЎЌйј¬?зЉ·зЃ¬?
 
 enum ScriptTexts
 {

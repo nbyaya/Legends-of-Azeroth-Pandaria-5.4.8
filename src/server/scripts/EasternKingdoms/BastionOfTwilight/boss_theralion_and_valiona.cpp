@@ -1,4 +1,4 @@
-/*
+ï»¿/*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -49,9 +49,9 @@ enum Spells
     SPELL_TWILIGHT_METEORITE_MARK                     = 88518,
     SPELL_DEEP_BREATH                                 = 86059,
     SPELL_TWILIGHT_FLAMES_TRIGGER                     = 86194,
-    SPELL_TWILIGHT_FLAME_DMG_1                        = 86199, // áüåò ïî îáû÷íîìó ìèðó
-    SPELL_TWILIGHT_FLAME_DMG_2                        = 86228, // áüåò ïî ñóìåðå÷íîìó ìèðó
-    SPELL_COSMETIC_TWILIGHT_BREATH                    = 78954, // âîçìîæíî íåâåðíûé
+    SPELL_TWILIGHT_FLAME_DMG_1                        = 86199, // ç‹³å¼ª é•± é’ºîŽ¤çœç¥— æ‰ˆç—¼
+    SPELL_TWILIGHT_FLAME_DMG_2                        = 86228, // ç‹³å¼ª é•± è€‹æˆ¾ç–±é»œé“Ž?æ‰ˆç—¼
+    SPELL_COSMETIC_TWILIGHT_BREATH                    = 78954, // å¿¸çˆé“ˆçœ ç¤¤å¿®ç—¦îŽ–
 
     // Theralion
     SPELL_ENGULFING_MAGIC                             = 86607,
@@ -72,8 +72,8 @@ enum Spells
 
     // twilight ream & mobs spells
     SPELL_TWILIGHT_PROTECTION_BUFF                    = 86415,
-    SPELL_TWILIGHT_SHIFT_AURA_1                       = 86202, // îò ãëóáîêîãî äûõàíèÿ
-    SPELL_TWILIGHT_SHIFT_AURA_2                       = 88436, // îò ðàçðóøåíèÿ
+    SPELL_TWILIGHT_SHIFT_AURA_1                       = 86202, // é“— æ±¶ç­¢é“Œé’½?æ½²è¸µé¾›ï£µ
+    SPELL_TWILIGHT_SHIFT_AURA_2                       = 88436, // é“— ç–£çŠç¯ªå±™?
     SPELL_COLLAPSING_TWILIGHT_PORTAL_VISUAL           = 86291,
     SPELL_UNSTABLE_TWILIGHT_VISUAL                    = 86302,
     SPELL_UNSTABLE_TWILIGHT_DMG                       = 86305,
@@ -591,7 +591,7 @@ class boss_valiona : public CreatureScript
             {
                 _Reset();
 
-                // ïðàâêè îáùèõ ñïåëëîâ òîæå òóò
+                // é•³å™”è§‡ é’ºî‹™?è€§å’«è…©?è¾é©½ è®?
 
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_PROTECTION_BUFF);
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_TWILIGHT_SHIFT_AURA_1);

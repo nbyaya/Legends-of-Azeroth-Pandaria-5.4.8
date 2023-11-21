@@ -1,4 +1,4 @@
-/*
+п»ї/*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
 * This program is free software; you can redistribute it and/or modify it
@@ -19,8 +19,8 @@
 #include "Spell.h"
 #include "bastion_of_twilight.h"
 
-// разобраться с спеллами electric instability, lava seed, liquid ice
-// найти вехиклид для avity crash
+// з–ЈзЏ™з‹ѓе›№оЏјпЈµ ?иЂ§е’«и±љж‰€ electric instability, lava seed, liquid ice
+// зЈ¬иЅµ?еї®и№Љи§ЊжЎЋ жЅ†пЈµ avity crash
 
 enum FeludiusScriptText
 {
@@ -167,10 +167,10 @@ enum Events
     EVENT_LIGHTNING_ROD                 = 17,
     EVENT_CHAIN_LIGHTNING               = 18,
     EVENT_THUNDERSHOCK                  = 19,
-    EVENT_PHASE_3_1                     = 20, // диалоги
-    EVENT_PHASE_3_2                     = 21, // диалоги
-    EVENT_PHASE_3_3                     = 22, // диалоги
-    EVENT_PHASE_3_4                     = 23, // диалоги
+    EVENT_PHASE_3_1                     = 20, // ж»‚ељЇй’Ѕ?
+    EVENT_PHASE_3_2                     = 21, // ж»‚ељЇй’Ѕ?
+    EVENT_PHASE_3_3                     = 22, // ж»‚ељЇй’Ѕ?
+    EVENT_PHASE_3_4                     = 23, // ж»‚ељЇй’Ѕ?
     EVENT_CRYOGENIC_AURA                = 24,
     EVENT_LAVA_SEED                     = 25,
     EVENT_GRAVITY_CRUSH                 = 26,
@@ -200,7 +200,7 @@ enum Adds
     NPC_VIOLENT_CYCLONE                     = 44747,
     NPC_LIQUID_ICE                          = 45452,
     NPC_ASCENDANT_COUNCIL_PLUME_STALKER     = 45420,
-    NPC_ASCENDANT_COUNCIL_TARGET_STALKER    = 44553,    //непонятно, откуда это
+    NPC_ASCENDANT_COUNCIL_TARGET_STALKER    = 44553,    //з¤¤й•±?иќЅ? й“—з‰¦жє§ о‘›?
     NPC_ASCENDANT_COUNCIL_CONTROLLER        = 43691,
     NPC_GRAVITY_CRUSH                       = 45476,
     NPC_FLAME_STRIKE                        = 49432,
@@ -220,21 +220,21 @@ enum Actions
 
 const Position councilPos[4] = 
 {
-    { -1053.54f, -564.38f, 835.02f, 5.81f }, // акварион
-    { -1054.04f, -600.60f, 835.03f, 0.42f }, // огнис
-    { -1057.89f, -653.51f, 877.70f, 0.79f }, // арион
-    { -1057.93f, -533.38f, 877.68f, 5.47f }, // террастра
+    { -1053.54f, -564.38f, 835.02f, 5.81f }, // ељ“еї„з—‚й“ђ
+    { -1054.04f, -600.60f, 835.03f, 0.42f }, // й’Ѕйѕ›?
+    { -1057.89f, -653.51f, 877.70f, 0.79f }, // е›µжЎЂ?
+    { -1057.93f, -533.38f, 877.68f, 5.47f }, // иќ€з—§е›«иќ ?
 };
 
 const Position groundPos[7] = 
 {
-    { -1038.45f, -590.60f, 831.98f, 6.04f }, // на 2й фазе сюда прыгает арион
-    { -1034.61f, -571.70f, 831.90f, 6.04f }, // на 2й фазе сюда прыгает террастра
-    { -1008.42f, -571.32f, 831.90f, 4.71f }, // на 3й фазе исходная точка аквариона
-    { -995.92f, -582.68f, 831.90f, 3.18f  }, // на 3й фазе исходная точка огниса
-    { -1008.75f, -594.82f, 831.90f, 1.52f }, // на 3й фазе исходная точка ариона
-    { -1020.88f, -582.67f, 831.90f, 0.0f  }, // на 3й фазе исходная точка террастры
-    { -1008.58f, -582.97f, 831.90f, 6.23f }, // на 3й фазе точка спавна монстросити
+    { -1038.45f, -590.60f, 831.98f, 6.04f }, // зЈ¬ 2?зѕїзЏЏ йўѓжє§ й•іоЋђе™±?е›µжЎЂ?
+    { -1034.61f, -571.70f, 831.90f, 6.04f }, // зЈ¬ 2?зѕїзЏЏ йўѓжє§ й•іоЋђе™±?иќ€з—§е›«иќ ?
+    { -1008.42f, -571.32f, 831.90f, 4.71f }, // зЈ¬ 3?зѕїзЏЏ жЎ‰иє…жј¤? иќѕйєќ?ељ“еї„з—‚й“ђ?
+    { -995.92f, -582.68f, 831.90f, 3.18f  }, // зЈ¬ 3?зѕїзЏЏ жЎ‰иє…жј¤? иќѕйєќ?й’Ѕйѕ›иҐ¦
+    { -1008.75f, -594.82f, 831.90f, 1.52f }, // зЈ¬ 3?зѕїзЏЏ жЎ‰иє…жј¤? иќѕйєќ?е›µжЎЂзЈ¬
+    { -1020.88f, -582.67f, 831.90f, 0.0f  }, // зЈ¬ 3?зѕїзЏЏ жЎ‰иє…жј¤? иќѕйєќ?иќ€з—§е›«иќ ?
+    { -1008.58f, -582.97f, 831.90f, 6.23f }, // зЈ¬ 3?зѕїзЏЏ иќѕйєќ?иЂ§е™”зЈ¬ зҐ›зњ€иќ й“–ж ©?
 };
 
 const Position randomPos[34] = 
