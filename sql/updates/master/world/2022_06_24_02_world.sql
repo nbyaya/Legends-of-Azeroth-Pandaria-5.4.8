@@ -182,4 +182,3 @@ DELETE FROM `creature_model_info` WHERE `modelid`=51811;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES (51811, 0.3978, 1.95, 0, 0);
 DELETE FROM `creature_model_info` WHERE `modelid`=51813;
 INSERT INTO `creature_model_info` (`modelid`, `bounding_radius`, `combat_reach`, `gender`, `modelid_other_gender`) VALUES (51813, 1.5, 2.25, 0, 0);
-0 comments on commit 39f7c9b
