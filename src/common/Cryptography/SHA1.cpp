@@ -31,12 +31,12 @@ SHA1Hash::~SHA1Hash()
     SHA1_Init(&mC);
 }
 
-void SHA1Hash::UpdateData(const uint8 *dta, int len)
+void SHA1Hash::UpdateData(const uint8* dta, int len)
 {
     SHA1_Update(&mC, dta, len);
 }
 
-void SHA1Hash::UpdateData(const std::string &str)
+void SHA1Hash::UpdateData(const std::string& str)
 {
     UpdateData((uint8 const*)str.c_str(), str.length());
 }
@@ -66,7 +66,17 @@ void SHA1Hash::Finalize(void)
     SHA1_Final(mDigest, &mC);
 }
 
- unsigned char * SHA1Hash::SHA1(const unsigned char *d, size_t n, unsigned char *md)
- {
-    return SHA1(d,n,md);
- }
+unsigned char* SHA1Hash::SHA1(const unsigned char* d, size_t n, unsigned char* md)
+{
+    SHA_CTX c;
+    if (!SHA1_Init(&c))
+        return nullptr;
+
+    if (!SHA1_Update(&c, d, n))
+        return nullptr;
+
+    if (!SHA1_Final(md, &c))
+        return nullptr;
+
+    return md;
+}
