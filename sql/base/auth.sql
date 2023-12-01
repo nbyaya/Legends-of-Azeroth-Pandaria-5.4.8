@@ -78,7 +78,7 @@ CREATE TABLE `account`  (
   INDEX `idx_id`(`id` ASC) USING BTREE,
   INDEX `idx_sha`(`sha_pass_hash` ASC) USING BTREE,
   INDEX `idx_session`(`sessionkey` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 18 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Account System' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Account System' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of account
@@ -826,7 +826,7 @@ CREATE TABLE `realmlist` (
 -- Records of realmlist
 -- ----------------------------
 INSERT INTO `realmlist` (`id`, `name`, `address`, `port`, `localAddress`, `localSubnetMask`, `icon`, `flag`, `timezone`, `allowedSecurityLevel`, `population`, `gamebuild`) VALUES 
-(1, 'MoP', '25.81.18.30', 8085, '127.0.0.1', '255.255.255.0', 0, 0, 14, 0, 0, 18414);
+(1, 'MoP', '127.0.0.1', 8085, '127.0.0.1', '255.255.255.0', 0, 0, 14, 0, 0, 18414);
 
 
 -- ----------------------------
