@@ -31,12 +31,9 @@
 #include "Implementation/CharacterDatabase.h"
 #include "Implementation/WorldDatabase.h"
 
-#include "MySQLThreading.h"
 
 
-#include "Log.h"
 #include "Master.h"
-#include "World.h"
 
 #include "AppenderDB.h"
 #include "AsyncAcceptor.h"
@@ -46,19 +43,27 @@
 #include "DeadlineTimer.h"
 #include "GitRevision.h"
 #include "IoContext.h"
-#include "ThreadPool.h"
+#include "Log.h"
+#include "MySQLThreading.h"
 #include "OpenSSLCrypto.h"
+#include "ProcessPriority.h"
 #include "RASession.h"
 #include "RealmList.h"
+#include "Resolver.h"
 #include "ScriptLoader.h"
 #include "ScriptMgr.h"
 #include "TCSoap.h"
+#include "ThreadPool.h"
+#include "World.h"
 
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/program_options.hpp>
+
+using namespace boost::program_options;
+namespace fs = boost::filesystem;
 
 #ifndef _TRINITY_CORE_CONFIG
 # define _TRINITY_CORE_CONFIG  "worldserver.conf"
@@ -79,7 +84,6 @@ int m_ServiceStatus = -1;
 #endif
 
 RealmNameMap realmNameStore;
-uint32 realmID;                                             ///< Id of the realm
 
 class FreezeDetector
 {
@@ -112,20 +116,8 @@ void StopDB();
 void WorldUpdateLoop();
 void ClearOnlineAccounts();
 void ShutdownCLIThread(std::thread* cliThread);
-
-/// Print out the usage string for this program on the console.
-void usage(const char* prog)
-{
-    printf("Usage:\n");
-    printf(" %s [<options>]\n", prog);
-    printf("    -c config_file           use config_file as configuration file\n");
-#ifdef _WIN32
-    printf("    Running as service functions:\n");
-    printf("    --service                run as service\n");
-    printf("    -s install               install service\n");
-    printf("    -s uninstall             uninstall service\n");
-#endif
-}
+//bool LoadRealmInfo(Trinity::Asio::IoContext& ioContext);
+variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& configService);
 
 /// Launch the Trinity server
 extern int main(int argc, char** argv)
@@ -134,68 +126,23 @@ extern int main(int argc, char** argv)
     signal(SIGABRT, &Trinity::AbortHandler);    
 
     ///- Command line parsing to get the configuration file name
-    char const* cfg_file = _TRINITY_CORE_CONFIG;
-    int c = 1;
-    while (c < argc)
-    {
-        if (!strcmp(argv[c], "-c"))
-        {
-            if (++c >= argc)
-            {
-                printf("Runtime-Error: -c option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-            else
-                cfg_file = argv[c];
-        }
-
-        #ifdef _WIN32
-        if (strcmp(argv[c], "-s") == 0) // Services
-        {
-            if (++c >= argc)
-            {
-                printf("Runtime-Error: -s option requires an input argument");
-                usage(argv[0]);
-                return 1;
-            }
-
-            if (strcmp(argv[c], "install") == 0)
-            {
-                if (WinServiceInstall())
-                    printf("Installing service\n");
-                return 1;
-            }
-            else if (strcmp(argv[c], "uninstall") == 0)
-            {
-                if (WinServiceUninstall())
-                    printf("Uninstalling service\n");
-                return 1;
-            }
-            else
-            {
-                printf("Runtime-Error: unsupported option %s", argv[c]);
-                usage(argv[0]);
-                return 1;
-            }
-        }
-
-        if (strcmp(argv[c], "--service") == 0)
-            WinServiceRun();
-        #endif
-        ++c;
-    }
+    auto configFile = fs::absolute(_TRINITY_CORE_CONFIG);
+    std::string configService;
+    auto vm = GetConsoleArguments(argc, argv, configFile, configService);
+    // exit if help or version is enabled
+    if (vm.count("help") || vm.count("version"))
+        return 0;
 
     std::string configError;
-    if (!sConfigMgr->LoadInitial(cfg_file,std::vector<std::string>(argv, argv + argc),configError))
+    if (!sConfigMgr->LoadInitial(configFile.generic_string(),
+                                 std::vector<std::string>(argv, argv + argc),
+                                 configError))
     {
-        printf("Invalid or missing configuration file : %s\n", cfg_file);
-        printf("Verify that the file exists and has \'[worldserver]' written in the top of the file!\n");
         printf("Error in config file: %s\n", configError.c_str());
         return 1;
     }
     
-    //std::vector<std::string> overriddenKeys = sConfigMgr->OverrideWithEnvVariablesIfAny();
+    std::vector<std::string> overriddenKeys = sConfigMgr->OverrideWithEnvVariablesIfAny();
 
     std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
 
@@ -257,6 +204,9 @@ extern int main(int argc, char** argv)
 
     std::shared_ptr<void> ioContextStopHandle(nullptr, [ioContext](void*) { ioContext->stop(); });
 
+    // Set process priority according to configuration settings
+    SetProcessPriority("server.worldserver", sConfigMgr->GetIntDefault(CONFIG_PROCESSOR_AFFINITY, 0), sConfigMgr->GetBoolDefault(CONFIG_HIGH_PRIORITY, false));
+
     // Start the databases
     if (!StartDB())
         return 1;
@@ -264,7 +214,10 @@ extern int main(int argc, char** argv)
     std::shared_ptr<void> dbHandle(nullptr, [](void*) { StopDB(); });
 
     // set server offline (not connectable)
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realmID);
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realm.Id.Realm);
+
+    //LoadRealmInfo(*ioContext);
+    sMaster->LoadRealmInfo();
 
     //sScriptMgr->SetScriptLoader(AddScripts);
     sScriptMgr->SetLoader(AddScripts);
@@ -336,7 +289,7 @@ extern int main(int argc, char** argv)
     sScriptMgr->OnShutdown();
 
     // set server offline
-    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realmID);
+    LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = flag | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, realm.Id.Realm);
 
     TC_LOG_INFO("server.worldserver", "Halting process...");
 
@@ -512,6 +465,53 @@ AsyncAcceptor* StartRaSocketAcceptor(Trinity::Asio::IoContext& ioContext)
     return acceptor;
 }
 
+// bool LoadRealmInfo(Trinity::Asio::IoContext& ioContext)
+// {
+//     QueryResult result = LoginDatabase.PQuery("SELECT id, name, address, localAddress, localSubnetMask, port, icon, flag, timezone, allowedSecurityLevel, population, gamebuild FROM realmlist WHERE id = %u", realm.Id.Realm);
+//     if (!result)
+//         return false;
+
+//     Trinity::Asio::Resolver resolver(ioContext);
+
+//     Field* fields = result->Fetch();
+//     realm.Name = fields[1].GetString();
+//     Optional<boost::asio::ip::tcp::endpoint> externalAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), fields[2].GetString(), "");
+//     if (!externalAddress)
+//     {
+//         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[2].GetString().c_str());
+//         return false;
+//     }
+
+//     realm.ExternalAddress = std::make_unique<boost::asio::ip::address>(externalAddress->address());
+
+//     Optional<boost::asio::ip::tcp::endpoint> localAddress = resolver.Resolve(boost::asio::ip::tcp::v4(), fields[3].GetString(), "");
+//     if (!localAddress)
+//     {
+//         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[3].GetString().c_str());
+//         return false;
+//     }
+
+//     realm.LocalAddress = std::make_unique<boost::asio::ip::address>(localAddress->address());
+
+//     Optional<boost::asio::ip::tcp::endpoint> localSubmask = resolver.Resolve(boost::asio::ip::tcp::v4(), fields[4].GetString(), "");
+//     if (!localSubmask)
+//     {
+//         TC_LOG_ERROR("server.worldserver", "Could not resolve address %s", fields[4].GetString().c_str());
+//         return false;
+//     }
+
+//     realm.LocalSubnetMask = std::make_unique<boost::asio::ip::address>(localSubmask->address());
+
+//     realm.Port = fields[5].GetUInt16();
+//     realm.Type = fields[6].GetUInt8();
+//     realm.Flags = RealmFlags(fields[7].GetUInt8());
+//     realm.Timezone = fields[8].GetUInt8();
+//     realm.AllowedSecurityLevel = AccountTypes(fields[9].GetUInt8());
+//     realm.PopulationLevel = fields[10].GetFloat();
+//     realm.Build = fields[11].GetUInt32();
+//     return true;
+// }
+
 /// Initialize connection to the databases
 bool StartDB()
 {
@@ -528,8 +528,8 @@ bool StartDB()
         return false;
 
     ///- Get the realm Id from the configuration file
-    realmID = sConfigMgr->GetIntDefault("RealmID", 0);
-    if (!realmID)
+    realm.Id.Realm = sConfigMgr->GetIntDefault("RealmID", 0);
+    if (!realm.Id.Realm)
     {
         TC_LOG_ERROR("server.worldserver", "Realm ID not defined in configuration file");
         return false;
@@ -548,7 +548,7 @@ bool StartDB()
         while (result->NextRow());
     }
 
-    TC_LOG_INFO("server.worldserver", "Realm running as realm ID %d", realmID);
+    TC_LOG_INFO("server.worldserver", "Realm running as realm ID %d", realm.Id.Realm);
 
     ///- Clean the database before starting
     ClearOnlineAccounts();
@@ -575,11 +575,53 @@ void StopDB()
 void ClearOnlineAccounts()
 {
     // Reset online status for all accounts with characters on the current realm
-    LoginDatabase.DirectPExecute("UPDATE account SET online = 0 WHERE online > 0 AND id IN (SELECT acctid FROM realmcharacters WHERE realmid = %d)", realmID);
+    LoginDatabase.DirectPExecute("UPDATE account SET online = 0 WHERE online > 0 AND id IN (SELECT acctid FROM realmcharacters WHERE realmid = %d)", realm.Id.Realm);
 
     // Reset online status for all characters
     CharacterDatabase.DirectExecute("UPDATE characters SET online = 0 WHERE online <> 0");
 
     // Battleground instance ids reset at server restart
     CharacterDatabase.DirectExecute("UPDATE character_battleground_data SET instanceId = 0");
+}
+
+variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& configService)
+{
+    // Silences warning about configService not be used if the OS is not Windows
+    (void)configService;
+
+    options_description all("Allowed options");
+    all.add_options()
+        ("help,h", "print usage message")
+        ("version,v", "print version build info")
+        ("config,c", value<fs::path>(&configFile)->default_value(fs::absolute(_TRINITY_CORE_CONFIG)),
+                     "use <arg> as configuration file")
+        ("update-databases-only,u", "updates databases only")
+        ;
+#ifdef _WIN32
+    options_description win("Windows platform specific options");
+    win.add_options()
+        ("service,s", value<std::string>(&configService)->default_value(""), "Windows service options: [install | uninstall]")
+        ;
+
+    all.add(win);
+#endif
+    variables_map vm;
+    try
+    {
+        store(command_line_parser(argc, argv).options(all).allow_unregistered().run(), vm);
+        notify(vm);
+    }
+    catch (std::exception& e) {
+        std::cerr << e.what() << "\n";
+    }
+
+    if (vm.count("help")) {
+        std::cout << all << "\n";
+    }
+    else if (vm.count("version"))
+    {
+        std::cout << GitRevision::GetFullVersion() << "\n";
+    }
+
+    return vm;
 }

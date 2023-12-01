@@ -48,7 +48,7 @@ file(GLOB_RECURSE sources_Quests Quests/*.cpp Quests/*.h)
 file(GLOB_RECURSE sources_Reputation Reputation/*.cpp Reputation/*.h)
 file(GLOB_RECURSE sources_Scenarios Scenarios/*.cpp Scenarios/*.h)
 file(GLOB_RECURSE sources_Scripting Scripting/*.cpp Scripting/*.h)
-file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h)
+file(GLOB_RECURSE sources_Server Server/*.cpp Server/*.h Server/Packets/*.h Server/Packets/*.cpp Server/Protocol/*.h Server/Protocol/*.cpp)
 file(GLOB_RECURSE sources_Services Services/*.cpp Services/*.h)
 file(GLOB_RECURSE sources_Skills Skills/*.cpp Skills/*.h)
 file(GLOB_RECURSE sources_Spells Spells/*.cpp Spells/*.h)
@@ -195,6 +195,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/common/Debugging
     ${CMAKE_SOURCE_DIR}/src/common/IPLocation
     ${CMAKE_SOURCE_DIR}/src/common/Logging
+    ${CMAKE_SOURCE_DIR}/src/common/Threading
     ${CMAKE_SOURCE_DIR}/src/server/collision
     ${CMAKE_SOURCE_DIR}/src/server/collision/Management
     ${CMAKE_SOURCE_DIR}/src/server/collision/Models
@@ -208,6 +209,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/server/shared/Networking
     ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
     ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Accounts

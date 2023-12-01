@@ -39,6 +39,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/common/Configuration
     ${CMAKE_SOURCE_DIR}/src/common/Debugging
     ${CMAKE_SOURCE_DIR}/src/common/Logging
+    ${CMAKE_SOURCE_DIR}/src/common/Threading
     ${CMAKE_SOURCE_DIR}/src/common/Utilities
     ${CMAKE_SOURCE_DIR}/dep/g3dlite/include
     ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
@@ -48,11 +49,11 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/shared/Debugging
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic
     ${CMAKE_SOURCE_DIR}/src/server/shared/Dynamic/LinkedReference
-    #${CMAKE_SOURCE_DIR}/src/server/shared/Logging
     ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
     ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_SOURCE_DIR}/src/server/shared/DataStores
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
     ${CMAKE_SOURCE_DIR}/src/server/game/Addons
     ${CMAKE_SOURCE_DIR}/src/server/game/Conditions
     ${CMAKE_SOURCE_DIR}/src/server/game/Entities/AreaTrigger
