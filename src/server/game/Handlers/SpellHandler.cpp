@@ -666,7 +666,7 @@ void WorldSession::HandleGameobjectReportUse(WorldPacket& recvPacket)
         return;
 
     // only for backward compatibility
-    if (go->AI()->GossipHello(_player))
+    if (go->AI()->OnGossipHello(_player))
         return;
 
     if (go->AI()->OnReportUse(_player))
