@@ -2000,12 +2000,12 @@ class go_horridon_orb_of_control : public GameObjectScript
         {
             go_horridon_orb_of_control_AI(GameObject *go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
-                if (uint32 spellId = GetControlSpellByOrb(go->GetEntry()))
+                if (uint32 spellId = GetControlSpellByOrb(me->GetEntry()))
                 {
                     player->CastSpell(player, spellId, true);
-                    go->RemoveFromWorld();
+                    me->RemoveFromWorld();
                 }
                 return true;
             }

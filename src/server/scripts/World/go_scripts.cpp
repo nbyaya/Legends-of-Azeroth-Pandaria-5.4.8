@@ -883,9 +883,9 @@ class go_soulwell : public GameObjectScript
             /// _and_ CMSG_GAMEOBJECT_REPORT_USE, this GossipHello hook is called
             /// twice. The script's handling is fine as it won't remove two charges
             /// on the well. We have to find how to segregate REPORT_USE and USE.
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
-                Unit* owner = go->GetOwner();
+                Unit* owner = me->GetOwner();
                 if (!owner || owner->GetTypeId() != TYPEID_PLAYER || !player->IsInSameRaidWith(owner->ToPlayer()))
                     return true;
                 return false;

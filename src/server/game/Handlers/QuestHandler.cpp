@@ -321,7 +321,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
                     break;
                 }
                 case TYPEID_GAMEOBJECT:
-                    object->ToGameObject()->AI()->QuestAccept(_player, quest);
+                    object->ToGameObject()->AI()->OnQuestAccept(_player, quest);
                     break;
                 default:
                     break;
@@ -529,7 +529,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
                         _player->PlayerTalkClass->SendQuestGiverQuestDetails(nextQuest, guid, true);
                     }
 
-                    object->ToGameObject()->AI()->QuestReward(_player, quest, reward);
+                    object->ToGameObject()->AI()->OnQuestReward(_player, quest, reward);
                 }
                 break;
             default:

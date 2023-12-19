@@ -2054,7 +2054,7 @@ class go_ice_wall : public GameObjectScript
             void UpdateAI(uint32 /*diff*/) override
             {
                 if (delay && !--delay)
-                    go->SetGoState(GO_STATE_READY);
+                    me->SetGoState(GO_STATE_READY);
             }
 
         private:

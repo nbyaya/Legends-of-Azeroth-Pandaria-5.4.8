@@ -2288,7 +2288,7 @@ public:
             if (state != GO_JUST_DEACTIVATED)
                 return;
 
-            if (Creature* koroth = go->FindNearestCreature(NPC_KOROTH_THE_HILLBREAKER, 30.0f))
+            if (Creature* koroth = me->FindNearestCreature(NPC_KOROTH_THE_HILLBREAKER, 30.0f))
             {
                 if (koroth->IsAIEnabled)
                 {

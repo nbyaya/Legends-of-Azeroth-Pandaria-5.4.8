@@ -3073,12 +3073,12 @@ class go_inconspicuous_lever : public GameObjectScript
                 if (state != GO_JUST_DEACTIVATED)
                     return;
 
-                if (InstanceScript* instance = go->GetInstanceScript())
+                if (InstanceScript* instance = me->GetInstanceScript())
                 {
                     if (instance->GetData(DATA_COLDFLAME_JETS) == IN_PROGRESS)
                     {
                         std::list<Creature*> traps;
-                        GetCreatureListWithEntryInGrid(traps, go, NPC_FROST_FREEZE_TRAP, 120.0f);
+                        GetCreatureListWithEntryInGrid(traps, me, NPC_FROST_FREEZE_TRAP, 120.0f);
                         for (std::list<Creature*>::iterator itr = traps.begin(); itr != traps.end(); ++itr)
                             (*itr)->AI()->DoAction(0);
 

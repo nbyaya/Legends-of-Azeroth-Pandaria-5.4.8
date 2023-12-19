@@ -1448,7 +1448,7 @@ class go_inversion : public GameObjectScript
         {
             go_inversionAI(GameObject* go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
                 if (!player->IsInCombat())
                     return true;
@@ -1461,7 +1461,7 @@ class go_inversion : public GameObjectScript
                     return true;
 
                 player->CastSpell(player, SPELL_SHROUD_OF_REVERASL_BUTTON, false);
-                go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
+                me->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
                 return false;
             }
@@ -1483,7 +1483,7 @@ class go_cancel : public GameObjectScript
         {
             go_cancelAI(GameObject* go) : GameObjectAI(go) { }
 
-            bool GossipHello(Player* player) override
+            bool OnGossipHello(Player* player) override
             {
                 if (!player->IsInCombat())
                     return true;
@@ -1495,7 +1495,7 @@ class go_cancel : public GameObjectScript
                     return true;
 
                 player->CastSpell(player, SPELL_NULLIFICATION_BARRIER_BUTTON, false);
-                go->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
+                me->SetFlag(GAMEOBJECT_FIELD_FLAGS, GO_FLAG_INTERACT_COND | GO_FLAG_NOT_SELECTABLE);
 
                 return false;
             }
