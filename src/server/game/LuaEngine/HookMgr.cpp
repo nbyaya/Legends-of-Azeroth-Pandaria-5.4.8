@@ -1697,12 +1697,12 @@ struct HookMgr::ElunaGameObjectAI : public GameObjectAI
 
     void UpdateAI(uint32 diff) override
     {
-        int bind = sEluna->GameObjectEventBindings->GetBind(go->GetEntry(), GAMEOBJECT_EVENT_ON_AIUPDATE);
+        int bind = sEluna->GameObjectEventBindings->GetBind(me->GetEntry(), GAMEOBJECT_EVENT_ON_AIUPDATE);
         if (!bind)
             return;
         sEluna->BeginCall(bind);
         sEluna->Push(sEluna->L, GAMEOBJECT_EVENT_ON_AIUPDATE);
-        sEluna->Push(sEluna->L, go);
+        sEluna->Push(sEluna->L, me);
         sEluna->Push(sEluna->L, diff);
         sEluna->ExecuteCall(3, 0);
     }
@@ -1714,15 +1714,15 @@ struct HookMgr::ElunaGameObjectAI : public GameObjectAI
         sEluna->Push(sEluna->L, funcRef);
         sEluna->Push(sEluna->L, delay);
         sEluna->Push(sEluna->L, calls);
-        sEluna->Push(sEluna->L, go);
+        sEluna->Push(sEluna->L, me);
         sEluna->ExecuteCall(4, 0);
     }
 
     void Reset() override
     {
-        sEluna->BeginCall(sEluna->GameObjectEventBindings->GetBind(go->GetEntry(), GAMEOBJECT_EVENT_ON_RESET));
+        sEluna->BeginCall(sEluna->GameObjectEventBindings->GetBind(me->GetEntry(), GAMEOBJECT_EVENT_ON_RESET));
         sEluna->Push(sEluna->L, GAMEOBJECT_EVENT_ON_RESET);
-        sEluna->Push(sEluna->L, go);
+        sEluna->Push(sEluna->L, me);
         sEluna->ExecuteCall(2, 0);
     }
 };
