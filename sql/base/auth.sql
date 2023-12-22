@@ -22,63 +22,6 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `account`;
 CREATE TABLE `account`  (
-  `id` int UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
-  `username` varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `battlenet_account` varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `sha_pass_hash` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `sessionkey` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `v` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `s` varchar(64) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `token_key` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `email` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `reg_mail` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `joindate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_ip` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '127.0.0.1',
-  `failed_logins` int UNSIGNED NOT NULL DEFAULT 0,
-  `locked` tinyint UNSIGNED NOT NULL DEFAULT 0,
-  `last_login` timestamp NULL DEFAULT NULL,
-  `online` tinyint UNSIGNED NOT NULL DEFAULT 0,
-  `expansion` tinyint UNSIGNED NOT NULL DEFAULT 4,
-  `mutetime` bigint NOT NULL DEFAULT 0,
-  `mutereason` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `muteby` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `locale` tinyint UNSIGNED NOT NULL DEFAULT 0,
-  `os` varchar(4) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `recruiter` int UNSIGNED NOT NULL DEFAULT 0,
-  `project_member_id` int UNSIGNED NOT NULL DEFAULT 0,
-  `rank` int NULL DEFAULT NULL,
-  `staff_id` int NULL DEFAULT NULL,
-  `vp` int NULL DEFAULT NULL,
-  `dp` int NOT NULL DEFAULT 0,
-  `isactive` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-  `activation` varchar(256) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NULL DEFAULT NULL,
-  `invited_by` varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `inv_friend_acc` varchar(32) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  `rewarded` int NOT NULL DEFAULT 0,
-  `flags` int NOT NULL DEFAULT 0,
-  `gmlevel` tinyint UNSIGNED NOT NULL DEFAULT 0,
-  `active_realm_id` int UNSIGNED NOT NULL DEFAULT 0,
-  `online_mute_timer` bigint UNSIGNED NOT NULL DEFAULT 0,
-  `active_mute_id` int UNSIGNED NOT NULL DEFAULT 0,
-  `project_verified` tinyint(1) NOT NULL DEFAULT 0,
-  `cash` int NOT NULL DEFAULT 0,
-  `project_is_free` tinyint(1) NOT NULL DEFAULT 0,
-  `project_is_temp` tinyint(1) NOT NULL DEFAULT 0,
-  `project_unban_count` tinyint NOT NULL DEFAULT 0,
-  `project_antierror` int UNSIGNED NULL DEFAULT NULL,
-  `project_attached` int UNSIGNED NULL DEFAULT NULL,
-  `project_passchange` int UNSIGNED NOT NULL DEFAULT 0,
-  `project_vote_time` bigint NOT NULL DEFAULT 0,
-  `project_hwid` varchar(40) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`) USING BTREE,
-  UNIQUE INDEX `idx_username`(`username` ASC) USING BTREE,
-  INDEX `idx_id`(`id` ASC) USING BTREE,
-  INDEX `idx_sha`(`sha_pass_hash` ASC) USING BTREE,
-  INDEX `idx_session`(`sessionkey` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Account System' ROW_FORMAT = Dynamic;
-
-
-CREATE TABLE `account` (
   `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Identifier',
   `username` varchar(32) NOT NULL DEFAULT '',
   `battlenet_account` varchar(32) NOT NULL DEFAULT '',
@@ -129,12 +72,12 @@ CREATE TABLE `account` (
   `project_passchange` int unsigned NOT NULL DEFAULT '0',
   `project_vote_time` bigint NOT NULL DEFAULT '0',
   `project_hwid` varchar(40) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_username` (`username`),
-  KEY `idx_id` (`id`) USING BTREE,
-  KEY `idx_sha` (`sha_pass_hash`) USING BTREE,
-  KEY `idx_session` (`sessionkey`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb3 COMMENT='Account System'
+  PRIMARY KEY (`id`) USING BTREE,
+  UNIQUE INDEX `idx_username`(`username` ASC) USING BTREE,
+  INDEX `idx_id`(`id` ASC) USING BTREE,
+  INDEX `idx_sha`(`sha_pass_hash` ASC) USING BTREE,
+  INDEX `idx_session`(`sessionkey` ASC) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Account System' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of account
