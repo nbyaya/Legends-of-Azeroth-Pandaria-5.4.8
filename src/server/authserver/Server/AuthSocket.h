@@ -26,6 +26,24 @@
 class ACE_INET_Addr;
 struct Realm;
 
+struct AccountInfo
+{
+    void LoadResult(Field* fields);
+
+    uint32 Id = 0;
+    std::string Login;
+    bool IsLockedToIP = false;
+    std::string LockCountry;
+    std::string LastIP;
+    uint32 FailedLogins = 0;
+    bool IsBanned = false;
+    bool IsPermanenetlyBanned = false;
+    std::string v;
+    std::string s;
+    std::string rI;
+    AccountTypes SecurityLevel = SEC_PLAYER;
+};
+
 // Handle login commands
 class AuthSocket: public RealmSocket::Session
 {
@@ -78,7 +96,8 @@ private:
     std::string _ipCountry;
     uint16 _build;
     uint8 _expversion;
-    AccountTypes _accountSecurityLevel;
+
+    AccountInfo _accountInfo;
 };
 
 #endif
