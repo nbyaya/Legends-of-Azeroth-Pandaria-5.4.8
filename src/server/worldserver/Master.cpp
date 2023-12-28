@@ -38,7 +38,6 @@
 #include "TCSoap.h"
 #include "Timer.h"
 #include "Util.h"
-#include "AuthSocket.h"
 #include "Realm.h"
 #include "ScriptLoader.h"
 #include "ScriptMgr.h"
