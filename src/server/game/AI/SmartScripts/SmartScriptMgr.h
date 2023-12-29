@@ -27,6 +27,7 @@
 
 //#include "SmartScript.h"
 //#include "SmartAI.h"
+typedef uint32 SAIBool;
 
 struct WayPoint
 {
@@ -222,6 +223,7 @@ struct SmartEvent
             uint32 maxDist;
             uint32 cooldownMin;
             uint32 cooldownMax;
+            SAIBool playerOnly;
         } los;
 
         struct
