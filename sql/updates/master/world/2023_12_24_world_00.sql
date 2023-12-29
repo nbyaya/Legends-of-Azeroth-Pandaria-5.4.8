@@ -1,7 +1,11 @@
 
 -- waypoint_scripts add column Comment
-ALTER TABLE `waypoint_scripts` 
+ALTER TABLE `waypoint_scripts`
+DROP COLUMN `Comment`;
+
+ALTER TABLE `waypoint_scripts`
 ADD COLUMN `Comment` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '' AFTER `guid`;
+
 
 -- Jenn Langston (1328) 
 UPDATE `creature` SET `position_x`=-8612.41, `position_y`=408.669, `position_z`=102.925, `orientation`=5.39708, `movement_type`=2 WHERE `guid`=188747;
@@ -26,13 +30,13 @@ INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `positio
 
 -- Kaellin Tarvane (47320)
 DELETE FROM `creature_addon` WHERE `guid`=189250;
-INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`) 
-VALUES (189250, 0, 0, 0, 0, 469, 0, 0, 0, '32783');
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`, `health_limit_pct`) 
+VALUES (189250, 0, 0, 0, 0, 469, 0, 0, 0, '32783', 0);
 
 -- Dar Rummond (50161)
 DELETE FROM `creature_addon` WHERE `guid`=235459; 
-INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`) 
-VALUES (235459, 0, 0, 0, 0, 469, 0, 0, 0, '32783');
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`, `health_limit_pct`) 
+VALUES (235459, 0, 0, 0, 0, 469, 0, 0, 0, '32783', 0);
 
 -- Myra Tyrngaarde (5109)
 DELETE FROM `creature_text` WHERE `CreatureID`=5109;
@@ -218,8 +222,8 @@ INSERT INTO `waypoint_scripts` (`id`, `delay`, `command`, `datalong`, `datalong2
 
 -- Bimble Longberry (7978)
 DELETE FROM `creature_addon` WHERE `guid`=180664;
-INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`) 
-VALUES (180664, 1806640, 0, 0, 0, 0, 0, 0, 0, NULL);
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`, `health_limit_pct`) 
+VALUES (180664, 1806640, 0, 0, 0, 0, 0, 0, 0, NULL, 0);
 DELETE FROM `waypoint_data` WHERE `id`= 1806640;
 INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`) VALUES
 (1806640, 0, -4641.676, -1014.932, 501.6339, NULL, 0),

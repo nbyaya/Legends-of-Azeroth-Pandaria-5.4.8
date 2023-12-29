@@ -44,8 +44,8 @@ INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `positio
 
 -- Nikova Raskol (1721)
 DELETE FROM `creature_addon` WHERE `guid`=188557;
-INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`) 
-VALUES (188557, 1885570, 0, 0, 0, 0, 0, 0, 0, NULL);
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`, `health_limit_pct`) 
+VALUES (188557, 1885570, 0, 0, 0, 0, 0, 0, 0, NULL, 0);
 UPDATE `creature` SET `movement_type`=2 WHERE `guid`=188557;
 DELETE FROM `waypoint_data` WHERE `id` IN (1885570);
 INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_flag`, `action`, `action_chance`, `wpguid`) VALUES 
