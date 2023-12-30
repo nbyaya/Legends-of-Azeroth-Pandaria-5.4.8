@@ -129,7 +129,7 @@ SET @NPC := @CGUID_ROB;
 SET @PATH := @NPC * 10;
 UPDATE `creature` SET  `movement_type`=2 WHERE `guid`=@NPC; -- `spawndist`=0,
 DELETE FROM `creature_addon` WHERE `guid`=@NPC;
-INSERT INTO `creature_addon` (`guid`,`path_id`,`mount`,`bytes1`,`bytes2`,`emote`,`auras`) VALUES (@NPC,@PATH,0,0,1,0, '');
+INSERT INTO `creature_addon` (`guid`,`path_id`,`mount`,`bytes1`,`bytes2`,`emote`,`auras`, `health_limit_pct`) VALUES (@NPC,@PATH,0,0,1,0, '',0);
 DELETE FROM `waypoint_data` WHERE `id`=@PATH;
 INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `position_z`, `orientation`, `delay`, `move_flag`, `action`, `action_chance`, `wpguid`) VALUES 
 (@PATH, 1, 2277.23, 5177.21, 11.34, 0, 0, 0, 0, 100, 0),
