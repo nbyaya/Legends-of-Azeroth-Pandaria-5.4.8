@@ -1,3 +1,4 @@
+
 /*
 * This file is part of the Pandaria 5.4.8 Project. See THANKS file for Copyright information
 *
@@ -42,6 +43,7 @@ enum LoginDatabaseStatements : uint32
     LOGIN_UPD_VS,
     LOGIN_UPD_LOGONPROOF,
     LOGIN_SEL_LOGONCHALLENGE,
+    LOGIN_SEL_RECONNECTCHALLENGE,
     LOGIN_UPD_FAILEDLOGINS,
     LOGIN_SEL_FAILEDLOGINS,
     LOGIN_SEL_ACCOUNT_ID_BY_NAME,

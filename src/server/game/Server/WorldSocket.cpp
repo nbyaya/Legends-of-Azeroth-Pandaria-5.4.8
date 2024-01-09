@@ -35,7 +35,7 @@
 #include "Opcodes.h"
 #include "DatabaseEnv.h"
 #include "BigNumber.h"
-#include "SHA1.h"
+//#include "SHA1.h"
 #include "WorldSession.h"
 #include "WorldSocketMgr.h"
 #include "Log.h"
@@ -868,7 +868,7 @@ struct AuthSession
     uint8 digest[20];
     uint32 clientSeed;
     uint16 clientBuild;
-    std::string account;
+    std::string Account;
     WorldPacket addonsData;
 };
 
@@ -891,7 +891,7 @@ struct AccountInfo
         //         0          1       2       3         4        5           6         7      8           9    10              11             12
         // SELECT id, sessionkey, last_ip, locked, lock_country, expansion, mutetime, locale, recruiter, os, flags, online_mute_timer, active_mute_id FROM account WHERE username = ?
         Id = fields[0].GetUInt32();
-        SessionKey = HexStrToByteArray<40>(std::string_view(fields[1].GetString())); //.GetBinary<80>(); // todo SESSION_KEY_LENGTH is not in hex
+        SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString()),true); //.GetBinary<80>(); // todo SESSION_KEY_LENGTH is not in hex
         LastIP = fields[2].GetString();
         IsLockedToIP = fields[3].GetBool();
         LockCountry = fields[4].GetString();
@@ -954,7 +954,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     recvPacket.ReadBit();
     uint32 accountNameLength = recvPacket.ReadBits(11);
 
-    authSession->account = recvPacket.ReadString(accountNameLength);
+    authSession->Account = recvPacket.ReadString(accountNameLength);
 
     if (sWorld->IsClosed())
     {
@@ -968,7 +968,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // SELECT id, sessionkey, last_ip, locked, expansion, mutetime, locale, recruiter, os, flags, online_mute_timer, active_mute_id FROM account WHERE username = ?
     // size_t hashPos = authSession->account.find_last_of('#');
     LoginDatabasePreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
-    stmt->setString(0, authSession->account);
+    stmt->setString(0, authSession->Account);
 
     PreparedQueryResult result = LoginDatabase.Query(stmt);
 
@@ -979,8 +979,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Sent Auth Response (unknown account).");
         return -1;
     }
-
-    Field* fields = result->Fetch();
 
     AccountInfo account(result->Fetch());
 
@@ -996,7 +994,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     }
 
     BigNumber k;
-    k.SetHexStr(fields[1].GetCString());
+    // k.SetHexStr(fields[1].GetCString());
 
     // Must be done before WorldSession is created
     if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED) && account.OS != "Win" && account.OS != "Wn64" && account.OS != "OSX")
@@ -1021,6 +1019,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     bool mutedInPublicChannelsOnly = false;
     uint32 onlineMuteTimer = 0;
 
+    Field* fields;// = result->Fetch();
     if (auto muteRes = LoginDatabase.PQuery("SELECT am.muted_by, am.mute_reason, am.public_channels_only, m.mute_timer FROM mute_active AS m, account_muted AS am WHERE m.realmid = '%u' AND m.account = '%u' AND m.mute_id = am.id AND m.realmid = am.realmid", realm.Id.Realm, account.Id))
     {
         fields = muteRes->Fetch();
@@ -1075,21 +1074,21 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Check that Key and account name are the same on client and server
     uint8 t[4] = { 0x00,0x00,0x00,0x00 };
 
-    SHA1Hash sha;
-    sha.UpdateData(authSession->account);
-    sha.UpdateData((uint8*)&t, 4);
+    Trinity::Crypto::SHA1 sha;
+    sha.UpdateData(authSession->Account);
+    sha.UpdateData(t);
+    //sha.UpdateData(authSession->clientSeed);
     sha.UpdateData((uint8*)&authSession->clientSeed, 4);
-    sha.UpdateData(_authSeed.data(), 4);
-    //sha.UpdateData(account.SessionKey.data(), 40);
-    sha.UpdateBigNumbers(&k, NULL);
+    sha.UpdateData(_authSeed);
+    sha.UpdateData(account.SessionKey);
     sha.Finalize();
 
     std::string address = GetRemoteAddress();
 
-    if (memcmp(sha.GetDigest(), authSession->digest, 20))
+    if (memcmp(sha.GetDigest().data(), authSession->digest, 20)) //(sha.GetDigest() != authSession->digest) //if (memcmp(sha.GetDigest(), authSession->digest, 20))
     {
         SendAuthResponseError(AUTH_FAILED);
-        TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Authentication failed for account: %u ('%s') address: %s", account.Id, authSession->account.c_str(), address.c_str());
+        TC_LOG_ERROR("network", "WorldSocket::HandleAuthSession: Authentication failed for account: %u ('%s') address: %s", account.Id, authSession->Account.c_str(), address.c_str());
         return -1;
     }
 
@@ -1098,7 +1097,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
 
     TC_LOG_DEBUG("network", "WorldSocket::HandleAuthSession: Client '%s' authenticated successfully from %s.",
-        authSession->account.c_str(),
+        authSession->Account.c_str(),
         address.c_str());
 
     // Check if this user is by any chance a recruiter
@@ -1117,21 +1116,20 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_IP);
 
     stmt->setString(0, address);
-    stmt->setString(1, authSession->account);
+    stmt->setString(1, authSession->Account);
 
     LoginDatabase.Execute(stmt);
+
+    m_Crypt.Init(account.SessionKey);
 
     // NOTE ATM the socket is single-threaded, have this in mind ...
     ACE_NEW_RETURN(m_Session, WorldSession(account.Id, this, AccountTypes(security), account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, isRecruiter, hasBoost), -1);
     //m_Session = new WorldSession(account.Id, shared_from_this(), AccountTypes(security), account.Expansion, account.MuteTime, account.Locale, account.Recruiter, account.Flags, isRecruiter, hasBoost);
     m_Session->SetMute({ onlineMuteTimer, mutedBy, muteReason, mutedInPublicChannelsOnly });
 
-    m_Crypt.Init(&k);
-
     m_Session->LoadGlobalAccountData();
     m_Session->LoadTutorialsData();
     m_Session->ReadAddonsInfo(authSession->addonsData);
-
     // Initialize Warden system only if it is enabled by config
     if (sWorld->getBoolConfig(CONFIG_WARDEN_ENABLED))
         m_Session->InitWarden(&k, account.OS);
@@ -1139,7 +1137,6 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Sleep this Network thread for
     uint32 sleepTime = sWorld->getIntConfig(CONFIG_SESSION_ADD_DELAY);
     std::this_thread::sleep_for(Microseconds(sleepTime));
-
     sWorld->AddSession(m_Session);
     return 0;
 }
