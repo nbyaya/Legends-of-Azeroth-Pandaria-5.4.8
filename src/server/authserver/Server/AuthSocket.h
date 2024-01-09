@@ -85,9 +85,11 @@ public:
     bool HandleXferCancel();
     bool HandleXferAccept();
 
-    void SetVSFields(const std::string& rI);
+    void SetVSFields(const std::string& rI, const std::string& login);
 
     void SendPacket(ByteBuffer& packet);
+
+    bool VerifyVersion(uint8 const* a, int32 aLength, Trinity::Crypto::SHA1::Digest const& versionProof, bool isReconnect);
 
     FILE* pPatch;
     std::mutex patcherLock;
@@ -96,26 +98,24 @@ private:
     RealmSocket& socket_;
     RealmSocket& socket(void) { return socket_; }
 
-    BigNumber N, s, g, v;
-    BigNumber b, B;
-    BigNumber K;
-    BigNumber _reconnectProof;
+    Optional<Trinity::Crypto::SRP6> _srp6;
+    SessionKey _sessionKey = {};    
+    std::array<uint8, 16> _reconnectProof = {};
 
-    std::string _login;
     std::string _tokenKey;
 
     // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ
     // between enUS and enGB, which is important for the patch system
+
+    AuthStatus _status;
+    AccountInfo _accountInfo;
+    Optional<std::vector<uint8>> _totpSecret;
     std::string _localizationName;
     std::string _os;
     std::string _ipCountry;
     uint16 _build;
     uint8 _expversion;
 
-    Optional<Trinity::Crypto::SRP6> _srp6;
-    SessionKey _sessionKey = {};
-    AuthStatus _status;
-    AccountInfo _accountInfo;
 };
 
 #pragma pack(push, 1)

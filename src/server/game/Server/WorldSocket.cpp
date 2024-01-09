@@ -891,7 +891,7 @@ struct AccountInfo
         //         0          1       2       3         4        5           6         7      8           9    10              11             12
         // SELECT id, sessionkey, last_ip, locked, lock_country, expansion, mutetime, locale, recruiter, os, flags, online_mute_timer, active_mute_id FROM account WHERE username = ?
         Id = fields[0].GetUInt32();
-        SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString()),true); //.GetBinary<80>(); // todo SESSION_KEY_LENGTH is not in hex
+        SessionKey = HexStrToByteArray<SESSION_KEY_LENGTH>(std::string_view(fields[1].GetString())); 
         LastIP = fields[2].GetString();
         IsLockedToIP = fields[3].GetBool();
         LockCountry = fields[4].GetString();
