@@ -15,19 +15,24 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SF_AUTHSOCKET_H
-#define SF_AUTHSOCKET_H
+#ifndef __AUTHSESSION_H__
+#define __AUTHSESSION_H__
 
-#include "Common.h"
+#include "AsyncCallbackProcessor.h"
 #include "BigNumber.h"
+#include "ByteBuffer.h"
+#include "Common.h"
+#include "CryptoHash.h"
 #include "Optional.h"
-#include "RealmSocket.h"
+#include "Socket.h"
 #include "SRP6.h"
-#include <mutex>
+#include "QueryResult.h"
+#include <memory>
+#include <boost/asio/ip/tcp.hpp>
 
-class ACE_INET_Addr;
-class ByteBuffer;
-struct Realm;
+using boost::asio::ip::tcp;
+
+class Field;
 struct AuthHandler;
 
 enum AuthStatus
@@ -58,54 +63,53 @@ struct AccountInfo
     AccountTypes SecurityLevel = SEC_PLAYER;
 };
 
-// Handle login commands
-class AuthSocket: public RealmSocket::Session
+class AuthSession : public Socket<AuthSession>
 {
+    typedef Socket<AuthSession> AuthSocket;
+
 public:
     const static int s_BYTE_SIZE = 32;
     static std::unordered_map<uint8, AuthHandler> InitHandlers();
 
-    AuthSocket(RealmSocket& socket);
-    virtual ~AuthSocket(void);
+    AuthSession(tcp::socket&& socket);
 
-    virtual void OnRead(void);
-    virtual void OnAccept(void);
-    virtual void OnClose(void);
+    void Start() override;
+    bool Update() override;
 
-    static ACE_INET_Addr const& GetAddressForClient(Realm const& realm, ACE_INET_Addr const& clientAddr);
+    void SendPacket(ByteBuffer& packet);
 
+protected:
+    void ReadHandler() override;
+
+private:
     bool HandleLogonChallenge();
     bool HandleLogonProof();
     bool HandleReconnectChallenge();
     bool HandleReconnectProof();
     bool HandleRealmList();
 
-    //data transfer handle for patch
-    bool HandleXferResume();
-    bool HandleXferCancel();
-    bool HandleXferAccept();
+    // //data transfer handle for patch
+    // bool HandleXferResume();
+    // bool HandleXferCancel();
+    // bool HandleXferAccept();
 
     void SetVSFields(const std::string& rI, const std::string& login);
 
-    void SendPacket(ByteBuffer& packet);
+    void CheckIpCallback(PreparedQueryResult result);
+    void LogonChallengeCallback(PreparedQueryResult result);
+    void ReconnectChallengeCallback(PreparedQueryResult result);
+    void RealmListCallback(PreparedQueryResult result);
 
     bool VerifyVersion(uint8 const* a, int32 aLength, Trinity::Crypto::SHA1::Digest const& versionProof, bool isReconnect);
 
     FILE* pPatch;
     std::mutex patcherLock;
 
-private:
-    RealmSocket& socket_;
-    RealmSocket& socket(void) { return socket_; }
-
     Optional<Trinity::Crypto::SRP6> _srp6;
-    SessionKey _sessionKey = {};    
+    SessionKey _sessionKey = {};
     std::array<uint8, 16> _reconnectProof = {};
 
     std::string _tokenKey;
-
-    // Since GetLocaleByName() is _NOT_ bijective, we have to store the locale as a string. Otherwise we can't differ
-    // between enUS and enGB, which is important for the patch system
 
     AuthStatus _status;
     AccountInfo _accountInfo;
@@ -116,6 +120,7 @@ private:
     uint16 _build;
     uint8 _expversion;
 
+    QueryCallbackProcessor _queryProcessor;
 };
 
 #pragma pack(push, 1)
@@ -124,8 +129,7 @@ struct AuthHandler
 {
     AuthStatus status;
     size_t packetSize;
-    //bool (AuthSession::*handler)();
-    bool (AuthSocket::*handler)(void);
+    bool (AuthSession::*handler)();
 };
 
 #pragma pack(pop)

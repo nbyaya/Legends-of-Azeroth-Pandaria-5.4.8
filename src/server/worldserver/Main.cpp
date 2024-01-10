@@ -217,7 +217,7 @@ extern int main(int argc, char** argv)
     LoginDatabase.DirectPExecute("UPDATE realmlist SET flag = (flag & ~%u) | %u WHERE id = '%d'", REALM_FLAG_OFFLINE, REALM_FLAG_INVALID, realm.Id.Realm);
 
     //LoadRealmInfo(*ioContext);
-    sMaster->LoadRealmInfo();
+    sMaster->LoadRealmInfo(*ioContext);
 
     //sScriptMgr->SetScriptLoader(AddScripts);
     sScriptMgr->SetLoader(AddScripts);

@@ -23,12 +23,8 @@
 * authentication server
 */
 
-#include <ace/Dev_Poll_Reactor.h>
-#include <ace/TP_Reactor.h>
-#include <ace/ACE.h>
-#include <openssl/opensslv.h>
-#include <openssl/crypto.h>
 #include "AppenderDB.h"
+#include "AuthSocketMgr.h"
 #include "Banner.h"
 #include "Common.h"
 #include "Configuration/Config.h"
@@ -40,13 +36,15 @@
 #include "OpenSSLCrypto.h"
 #include "ProcessPriority.h"
 #include "RealmList.h"
-#include "RealmAcceptor.h"
 #include "SignalHandler.h"
 #include "SystemConfig.h"
 #include "Util.h"
-#include <boost/program_options.hpp>
+#include <boost/asio/signal_set.hpp>
 #include <boost/dll/runtime_symbol_info.hpp>
+#include <boost/program_options.hpp>
 #include <boost/filesystem/operations.hpp>
+#include <openssl/crypto.h>
+#include <openssl/opensslv.h>
 #include <iostream>
 #include <csignal>
 
@@ -57,35 +55,28 @@ namespace fs = boost::filesystem;
 # define _TRINITY_REALM_CONFIG  "authserver.conf"
 #endif
 
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+#include "ServiceWin32.h"
+char serviceName[] = "authserver";
+char serviceLongName[] = "TrinityCore auth service";
+char serviceDescription[] = "TrinityCore World of Warcraft emulator auth service";
+/*
+* -1 - not in service mode
+*  0 - stopped
+*  1 - running
+*  2 - paused
+*/
+int m_ServiceStatus = -1;
+
+void ServiceStatusWatcher(std::weak_ptr<Trinity::Asio::DeadlineTimer> serviceStatusWatchTimerRef, std::weak_ptr<Trinity::Asio::IoContext> ioContextRef, boost::system::error_code const& error);
+#endif
+
 bool StartDB();
 void StopDB();
+void SignalHandler(std::weak_ptr<Trinity::Asio::IoContext> ioContextRef, boost::system::error_code const& error, int signalNumber);
+void KeepDatabaseAliveHandler(std::weak_ptr<Trinity::Asio::DeadlineTimer> dbPingTimerRef, int32 dbPingInterval, boost::system::error_code const& error);
+void BanExpiryHandler(std::weak_ptr<Trinity::Asio::DeadlineTimer> banExpiryCheckTimerRef, int32 banExpiryCheckInterval, boost::system::error_code const& error);
 variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& configService);
-
-bool stopEvent = false;                                     // Setting it to true stops the server
-
-/// Handle authserver's termination signals
-class AuthServerSignalHandler : public Trinity::SignalHandler
-{
-public:
-    virtual void HandleSignal(int sigNum)
-    {
-        switch (sigNum)
-        {
-        case SIGINT:
-        case SIGTERM:
-            stopEvent = true;
-            break;
-        }
-    }
-};
-
-/// Print out the usage string for this program on the console.
-void usage(const char* prog)
-{
-    TC_LOG_INFO("server.authserver", "Usage: \n %s [<options>]\n"
-        "    -c config_file           use config_file as configuration file\n\r",
-        prog);
-}
 
 /// Launch the auth server
 int main(int argc, char** argv)
@@ -146,20 +137,19 @@ int main(int argc, char** argv)
         }
     }
 
-#if defined (ACE_HAS_EVENT_POLL) || defined (ACE_HAS_DEV_POLL)
-    ACE_Reactor::instance(new ACE_Reactor(new ACE_Dev_Poll_Reactor(ACE::max_handles(), 1), 1), true);
-#else
-    ACE_Reactor::instance(new ACE_Reactor(new ACE_TP_Reactor(), true), true);
-#endif
-
-    TC_LOG_DEBUG("server.authserver", "Max allowed open files is %d", ACE::max_handles());
-
     // Initialize the database connection
     if (!StartDB())
         return 1;
 
+    std::shared_ptr<void> dbHandle(nullptr, [](void*) { StopDB(); });
+
+    std::shared_ptr<Trinity::Asio::IoContext> ioContext = std::make_shared<Trinity::Asio::IoContext>();
+
     // Get the list of realms for the server
-    sRealmList->Initialize(sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
+    sRealmList->Initialize(*ioContext, sConfigMgr->GetIntDefault("RealmsStateUpdateDelay", 20));
+
+    std::shared_ptr<void> sRealmListHandle(nullptr, [](void*) { sRealmList->Close(); });
+
     if (sRealmList->GetRealms().empty())
     {
         TC_LOG_ERROR("server.authserver", "No valid realms specified.");
@@ -167,10 +157,10 @@ int main(int argc, char** argv)
     }
 
     // Launch the listening network socket
-    RealmAcceptor acceptor;
+    //RealmAcceptor acceptor;
 
-    int32 rmport = sConfigMgr->GetIntDefault("RealmServerPort", 3724);
-    if (rmport < 0 || rmport > 0xFFFF)
+    int32 port = sConfigMgr->GetIntDefault("RealmServerPort", 3724);
+    if (port < 0 || port > 0xFFFF)
     {
         TC_LOG_ERROR("server.authserver", "Specified port out of allowed range (1-65535)");
         return 1;
@@ -178,59 +168,57 @@ int main(int argc, char** argv)
 
     std::string bind_ip = sConfigMgr->GetStringDefault("BindIP", "0.0.0.0");
 
-    ACE_INET_Addr bind_addr(uint16(rmport), bind_ip.c_str());
-
-    if (acceptor.open(bind_addr, ACE_Reactor::instance(), ACE_NONBLOCK) == -1)
+    if (!sAuthSocketMgr.StartNetwork(*ioContext, bind_ip, port))
     {
-        TC_LOG_ERROR("server.authserver", "Auth server can not bind to %s:%d", bind_ip.c_str(), rmport);
+        TC_LOG_ERROR("server.authserver", "Failed to initialize network");
         return 1;
     }
 
-    // Initialize the signal handlers
-    Trinity::SignalHandler signalHandler;
-    auto const _handler = [](int) { stopEvent = true; };
+    std::shared_ptr<void> sAuthSocketMgrHandle(nullptr, [](void*) { sAuthSocketMgr.StopNetwork(); });
 
-    // Register authservers's signal handlers
-    signalHandler.handle_signal(SIGINT, _handler);
-    signalHandler.handle_signal(SIGTERM, _handler);
-#if defined(_WIN32)
-    signalHandler.handle_signal(SIGBREAK, _handler);
+    // Set signal handlers
+    boost::asio::signal_set signals(*ioContext, SIGINT, SIGTERM);
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+    signals.add(SIGBREAK);
 #endif
+    signals.async_wait(std::bind(&SignalHandler, std::weak_ptr<Trinity::Asio::IoContext>(ioContext), std::placeholders::_1, std::placeholders::_2));
 
     // Set process priority according to configuration settings
     SetProcessPriority("server.authserver", sConfigMgr->GetIntDefault(CONFIG_PROCESSOR_AFFINITY, 0), sConfigMgr->GetBoolDefault(CONFIG_HIGH_PRIORITY, false));
 
-    // maximum counter for next ping
-    uint32 numLoops = (sConfigMgr->GetIntDefault("MaxPingTime", 30) * (MINUTE * 1000000 / 100000));
-    uint32 loopCounter = 0;
-
     // Enabled a timed callback for handling the database keep alive ping
-    // int32 dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 30);
-    // std::shared_ptr<Trinity::Asio::DeadlineTimer> dbPingTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
-    // dbPingTimer->expires_from_now(boost::posix_time::minutes(dbPingInterval));
-    // dbPingTimer->async_wait(std::bind(&KeepDatabaseAliveHandler, std::weak_ptr<Trinity::Asio::DeadlineTimer>(dbPingTimer), dbPingInterval, std::placeholders::_1));
+    int32 dbPingInterval = sConfigMgr->GetIntDefault("MaxPingTime", 30);
+    std::shared_ptr<Trinity::Asio::DeadlineTimer> dbPingTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
+    dbPingTimer->expires_from_now(boost::posix_time::minutes(dbPingInterval));
+    dbPingTimer->async_wait(std::bind(&KeepDatabaseAliveHandler, std::weak_ptr<Trinity::Asio::DeadlineTimer>(dbPingTimer), dbPingInterval, std::placeholders::_1));
 
-    // Wait for termination signal
-    while (!stopEvent)
+    int32 banExpiryCheckInterval = sConfigMgr->GetIntDefault("BanExpiryCheckInterval", 60);
+    std::shared_ptr<Trinity::Asio::DeadlineTimer> banExpiryCheckTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
+    banExpiryCheckTimer->expires_from_now(boost::posix_time::seconds(banExpiryCheckInterval));
+    banExpiryCheckTimer->async_wait(std::bind(&BanExpiryHandler, std::weak_ptr<Trinity::Asio::DeadlineTimer>(banExpiryCheckTimer), banExpiryCheckInterval, std::placeholders::_1));
+
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+    std::shared_ptr<Trinity::Asio::DeadlineTimer> serviceStatusWatchTimer;
+    if (m_ServiceStatus != -1)
     {
-        // dont move this outside the loop, the reactor will modify it
-        ACE_Time_Value interval(0, 100000);
-
-        if (ACE_Reactor::instance()->run_reactor_event_loop(interval) == -1)
-            break;
-
-        if ((++loopCounter) == numLoops)
-        {
-            loopCounter = 0;
-            TC_LOG_INFO("server.authserver", "Ping MySQL to keep connection alive");
-            LoginDatabase.KeepAlive();
-        }
+        serviceStatusWatchTimer = std::make_shared<Trinity::Asio::DeadlineTimer>(*ioContext);
+        serviceStatusWatchTimer->expires_from_now(boost::posix_time::seconds(1));
+        serviceStatusWatchTimer->async_wait(std::bind(&ServiceStatusWatcher,
+            std::weak_ptr<Trinity::Asio::DeadlineTimer>(serviceStatusWatchTimer),
+            std::weak_ptr<Trinity::Asio::IoContext>(ioContext),
+            std::placeholders::_1));
     }
+#endif
 
-    // Close the Database Pool and library
-    StopDB();
+    // Start the io service worker loop
+    ioContext->run();
+
+    banExpiryCheckTimer->cancel();
+    dbPingTimer->cancel();
 
     TC_LOG_INFO("server.authserver", "Halting process...");
+
+    signals.cancel();
     return 0;
 }
 
@@ -287,6 +275,62 @@ void StopDB()
     LoginDatabase.Close();
     MySQL::Library_End();
 }
+
+void SignalHandler(std::weak_ptr<Trinity::Asio::IoContext> ioContextRef, boost::system::error_code const& error, int /*signalNumber*/)
+{
+    if (!error)
+        if (std::shared_ptr<Trinity::Asio::IoContext> ioContext = ioContextRef.lock())
+            ioContext->stop();
+}
+
+void KeepDatabaseAliveHandler(std::weak_ptr<Trinity::Asio::DeadlineTimer> dbPingTimerRef, int32 dbPingInterval, boost::system::error_code const& error)
+{
+    if (!error)
+    {
+        if (std::shared_ptr<Trinity::Asio::DeadlineTimer> dbPingTimer = dbPingTimerRef.lock())
+        {
+            TC_LOG_INFO("server.authserver", "Ping MySQL to keep connection alive");
+            LoginDatabase.KeepAlive();
+
+            dbPingTimer->expires_from_now(boost::posix_time::minutes(dbPingInterval));
+            dbPingTimer->async_wait(std::bind(&KeepDatabaseAliveHandler, dbPingTimerRef, dbPingInterval, std::placeholders::_1));
+        }
+    }
+}
+
+void BanExpiryHandler(std::weak_ptr<Trinity::Asio::DeadlineTimer> banExpiryCheckTimerRef, int32 banExpiryCheckInterval, boost::system::error_code const& error)
+{
+    if (!error)
+    {
+        if (std::shared_ptr<Trinity::Asio::DeadlineTimer> banExpiryCheckTimer = banExpiryCheckTimerRef.lock())
+        {
+            LoginDatabase.Execute(LoginDatabase.GetPreparedStatement(LOGIN_DEL_EXPIRED_IP_BANS));
+            LoginDatabase.Execute(LoginDatabase.GetPreparedStatement(LOGIN_UPD_EXPIRED_ACCOUNT_BANS));
+
+            banExpiryCheckTimer->expires_from_now(boost::posix_time::seconds(banExpiryCheckInterval));
+            banExpiryCheckTimer->async_wait(std::bind(&BanExpiryHandler, banExpiryCheckTimerRef, banExpiryCheckInterval, std::placeholders::_1));
+        }
+    }
+}
+
+#if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
+void ServiceStatusWatcher(std::weak_ptr<Trinity::Asio::DeadlineTimer> serviceStatusWatchTimerRef, std::weak_ptr<Trinity::Asio::IoContext> ioContextRef, boost::system::error_code const& error)
+{
+    if (!error)
+    {
+        if (std::shared_ptr<Trinity::Asio::IoContext> ioContext = ioContextRef.lock())
+        {
+            if (m_ServiceStatus == 0)
+                ioContext->stop();
+            else if (std::shared_ptr<Trinity::Asio::DeadlineTimer> serviceStatusWatchTimer = serviceStatusWatchTimerRef.lock())
+            {
+                serviceStatusWatchTimer->expires_from_now(boost::posix_time::seconds(1));
+                serviceStatusWatchTimer->async_wait(std::bind(&ServiceStatusWatcher, serviceStatusWatchTimerRef, ioContextRef, std::placeholders::_1));
+            }
+        }
+    }
+}
+#endif
 
 variables_map GetConsoleArguments(int argc, char** argv, fs::path& configFile, std::string& configService)
 {

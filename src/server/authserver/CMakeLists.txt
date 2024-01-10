@@ -55,6 +55,7 @@ include_directories(
   PRIVATE
     ${CMAKE_SOURCE_DIR}/src/common
     ${CMAKE_SOURCE_DIR}/src/common/Asio
+    ${CMAKE_SOURCE_DIR}/src/common/Configuration
     ${CMAKE_SOURCE_DIR}/src/common/Cryptography
     ${CMAKE_SOURCE_DIR}/src/common/Cryptography/Authentication 
     ${CMAKE_SOURCE_DIR}/src/common/Debugging 
@@ -66,14 +67,14 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/src/server/database/Database
     ${CMAKE_SOURCE_DIR}/src/server/database/Logging
     ${CMAKE_SOURCE_DIR}/src/server/shared
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Networking    
     ${CMAKE_SOURCE_DIR}/src/server/shared/Packets
-    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     ${CMAKE_SOURCE_DIR}/src/server/shared/Realms
+    ${CMAKE_SOURCE_DIR}/src/server/shared/Threading
     ${CMAKE_SOURCE_DIR}/src/server/shared/Utilities
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}/Authentication
     ${CMAKE_CURRENT_SOURCE_DIR}/Server
-    ${ACE_INCLUDE_DIR}
     ${MYSQL_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/dep/fmt/include
@@ -100,7 +101,6 @@ target_link_libraries(authserver
   ${OPENSSL_LIBRARIES}
   ${CMAKE_THREAD_LIBS_INIT}
   ${CMAKE_DL_LIBS}
-  ${ACE_LIBRARY}
   ${Boost_LIBRARIES}
 )
 
