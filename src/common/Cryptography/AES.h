@@ -15,30 +15,37 @@
 * with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/// \addtogroup Trinityd
-/// @{
-/// \file
+#ifndef Trinity_AES_h__
+#define Trinity_AES_h__
 
-#ifndef _MASTER_H
-#define _MASTER_H
+#include "Define.h"
+#include <array>
+#include <openssl/evp.h>
 
-#include "Common.h"
-#include "IoContext.h"
-
-/// Start the server
-class Master
+namespace Trinity::Crypto
 {
+    class TC_COMMON_API AES
+    {
     public:
-        static Master* instance();
-        int Run();
-        bool LoadRealmInfo(Trinity::Asio::IoContext& ioContext);
+        static constexpr size_t IV_SIZE_BYTES = 12;
+        static constexpr size_t KEY_SIZE_BYTES = 16;
+        static constexpr size_t TAG_SIZE_BYTES = 12;
+
+        using IV = std::array<uint8, IV_SIZE_BYTES>;
+        using Key = std::array<uint8, KEY_SIZE_BYTES>;
+        using Tag = uint8[TAG_SIZE_BYTES];
+
+        AES(bool encrypting);
+        ~AES();
+
+        void Init(Key const& key);
+
+        bool Process(IV const& iv, uint8* data, size_t length, Tag& tag);
 
     private:
-        void ClearOnlineAccounts();
-};
+        EVP_CIPHER_CTX* _ctx;
+        bool _encrypting;
+    };
+}
 
-#define sMaster Master::instance()
-
-#endif
-
-/// @}
+#endif // Trinity_AES_h__

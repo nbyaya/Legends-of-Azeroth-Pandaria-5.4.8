@@ -335,6 +335,7 @@ bool consoleToUtf8(const std::string& conStr, std::string& utf8str);
 bool Utf8FitTo(const std::string& str, std::wstring search);
 void utf8printf(FILE* out, const char *str, ...);
 void vutf8printf(FILE* out, const char *str, va_list* ap);
+TC_COMMON_API bool Utf8ToUpperOnlyLatin(std::string& utf8String);
 
 #if TRINITY_PLATFORM == TRINITY_PLATFORM_WINDOWS
 TC_COMMON_API bool ReadWinConsole(std::string& str, size_t size = 256);

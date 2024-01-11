@@ -19,6 +19,8 @@
 #define _AUTHCRYPT_H
 
 #include "Cryptography/ARC4.h"
+#include "AuthDefines.h"
+#include <array>
 
 class BigNumber;
 
@@ -27,7 +29,7 @@ class AuthCrypt
     public:
         AuthCrypt();
 
-        void Init(BigNumber* K);
+        void Init(SessionKey const& K);
         void DecryptRecv(uint8 *, size_t);
         void EncryptSend(uint8 *, size_t);
 

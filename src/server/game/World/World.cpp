@@ -95,6 +95,7 @@
 #include "ServiceMgr.h"
 #include "WordFilterMgr.h"
 #include "Realm.h"
+#include <boost/asio/ip/address.hpp>
 #ifdef ELUNA
 #include "LuaEngine.h"
 #include "HookMgr.h"

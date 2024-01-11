@@ -1,5 +1,5 @@
-//#include "Utilities/Util.h"
-//#include "Configuration/Config.h"
+#include "Utilities/Util.h"
+#include "Configuration/Config.h"
 #include "DatabaseEnv.h"
 #include <signal.h>
 #include <utf8.h>
@@ -8,50 +8,7 @@
 #include <fstream>
 #include <memory>
 #include <iostream>
-#include <vector>
-#include <algorithm>
-#include <format>
-#include "../server/database/Database/DatabaseWorkerPool.h"
-#include "../server/database/Database/MySQLConnection.h"
-#include "../common/Define.h"
-#include <list>
-#include <set>
-#include "../common/Configuration/Config.h"
-#include "../common/Debugging/Errors.h"
-#include "../tools/map_extractor/dbcfile.h"
-#include "../tools/vmap4_extractor/dbcfile.h"
-#include <DbgEng.h>
-#include "../common/Utilities/Util.h"
-#include "../common/Logging/Appender.h"
-#include "../common/Logging/Log.h"
-#include "../common/Logging/LogMessage.h"
-#include <ace/Acceptor.cpp>
-#include <ace/Service_Types.cpp>
-#include <ace/Naming_Context.h>
-#include <ace/Shared_Object.cpp>
-#include <ace/Naming_Context.cpp>
-#include <ace/Svc_Handler.cpp>
-#include <ace/Stream_Modules.cpp>
-#include <ace/Connector.h>
-#include <ace/Acceptor.h>
-#include <ace/Service_Manager.cpp>
-#include "../common/Logging/Logger.h"
-//#include "../common/Logging/AppenderDB.h"
-#include <../common/Logging/AppenderDB.h>
-#include "../../dep/mysqllite/include/mysql.h"
-#include "../../dep/lualib/lparser.h"
-#include "../../dep/mysqllite/include/mysql/plugin_auth_common.h"
-#include <boost/chrono/detail/inlined/mac/thread_clock.hpp>
-#include "../../dep/mysqllite/include/mysql/plugin_auth_common.h"
-#include "../../dep/mysqllite/include/mysql/plugin.h"
-#include "../../dep/lualib/lparser.h"
-#include "../../dep/mysqllite/include/mysql.h"
-#include "../../dep/mysqllite/include/my_pthread.h"
-#include "../../dep/mysqllite/sql-common/client.c"
-#include "../../dep/fmt/include/fmt/format-inl.h"
-#include "../../dep/mysqllite/include/mysql/plugin.h"
-#include "ace/ACE.h"
-#include "UtilACE.h"
+#include "AppenderDB.h"
 
 void AppenderDB::_write(LogMessage const&) { }
 
@@ -141,7 +98,7 @@ class SQLConnection
 {
 public:
     SQLConnection(MySQLConnectionInfo const& info)
-        : _info(ACE_Acceptor::info), _conn(nullptr)
+        : _info(info), _conn(nullptr)
     {
         if (!Open())
             throw Exception("Coudn't connect to database: " + info.database);
@@ -164,7 +121,7 @@ public:
             return false;
         }
         mysql_autocommit(_conn, 1);
-        mysql_set_character_set(SQLConnection::_conn, "utf8");
+        mysql_set_character_set(_conn, "utf8");
         return true;
     }
 

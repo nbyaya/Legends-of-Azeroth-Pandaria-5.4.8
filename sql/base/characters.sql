@@ -2447,4 +2447,8 @@ CREATE TABLE `worldstates` (
 /*Data for the table `worldstates` */
 
 insert  into `worldstates`(`entry`,`value`,`comment`) values (3781,9000000,NULL),(3801,0,NULL),(3802,1,NULL),(20001,1636196400,'NextArenaPointDistributionTime'),(20002,1636583941,'NextWeeklyQuestResetTime'),(20003,1636196400,'NextBGRandomDailyResetTime'),(20004,0,'cleaning_flags'),(20006,1636196400,NULL),(20007,1638334800,NULL),(20008,291,NULL),(20009,8,NULL),(20050,4,NULL);
-  
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;

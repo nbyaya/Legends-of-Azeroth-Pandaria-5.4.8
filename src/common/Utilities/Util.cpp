@@ -561,6 +561,17 @@ void vutf8printf(FILE* out, const char *str, va_list* ap)
 #endif
 }
 
+bool Utf8ToUpperOnlyLatin(std::string& utf8String)
+{
+    std::wstring wstr;
+    if (!Utf8toWStr(utf8String, wstr))
+        return false;
+
+    std::transform(wstr.begin(), wstr.end(), wstr.begin(), wcharToUpperOnlyLatin);
+
+    return WStrToUtf8(wstr, utf8String);
+}
+
 TC_COMMON_API Optional<std::size_t> RemoveCRLF(std::string & str)
 {
     std::size_t nextLineIndex = str.find_first_of("\r\n");

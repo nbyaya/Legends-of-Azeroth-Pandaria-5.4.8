@@ -18,9 +18,8 @@
 #ifndef Realm_h__
 #define Realm_h__
 
-#include <ace/Null_Mutex.h>
-#include <ace/INET_Addr.h>
 #include "Common.h"
+#include "AsioHacksFwd.h"
 
 enum RealmFlags
 {
@@ -68,18 +67,9 @@ struct TC_SHARED_API Realm
 {
     RealmHandle Id;
     uint32 Build;
-    // ACE_INET_Addr ExternalAddress;
-    // std::string name;
-    // uint8 icon;
-    // RealmFlags flag;
-    // uint8 timezone;
-    // uint32 m_ID;
-    // AccountTypes allowedSecurityLevel;
-    // float populationLevel;
-    // uint32 gamebuild;
-    std::unique_ptr<ACE_INET_Addr> ExternalAddress;
-    std::unique_ptr<ACE_INET_Addr> LocalAddress;
-    std::unique_ptr<ACE_INET_Addr> LocalSubnetMask;
+    std::unique_ptr<boost::asio::ip::address> ExternalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalAddress;
+    std::unique_ptr<boost::asio::ip::address> LocalSubnetMask;    
     uint16 Port;
     std::string Name;
     uint8 Type;
@@ -87,6 +77,8 @@ struct TC_SHARED_API Realm
     uint8 Timezone;
     AccountTypes AllowedSecurityLevel;
     float PopulationLevel;
+
+    boost::asio::ip::tcp_endpoint GetAddressForClient(boost::asio::ip::address const& clientAddr) const;
 };
 
 #endif
