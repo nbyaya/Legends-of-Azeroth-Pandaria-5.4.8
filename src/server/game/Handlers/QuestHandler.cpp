@@ -134,8 +134,8 @@ void WorldSession::HandleQuestgiverHelloOpcode(WorldPacket& recvData)
     // Stop the npc if moving
     creature->StopMoving();
 
-    if (!sScriptMgr->OnGossipHello(_player, creature))
-        _player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
+    if (sScriptMgr->OnGossipHello(_player, creature))
+        return;
 
     _player->PrepareGossipMenu(creature, creature->GetGossipMenuId(), true);
     _player->SendPreparedGossip(creature);
