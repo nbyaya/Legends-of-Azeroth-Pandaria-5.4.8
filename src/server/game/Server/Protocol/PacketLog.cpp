@@ -20,9 +20,9 @@
 #include "ByteBuffer.h"
 #include "WorldPacket.h"
 
-PacketLog::PacketLog() : _file(NULL)
+PacketLog::PacketLog() : _file(nullptr)
 {
-    Initialize();
+    std::call_once(_initializeFlag, &PacketLog::Initialize, this);
 }
 
 PacketLog::~PacketLog()
@@ -30,7 +30,7 @@ PacketLog::~PacketLog()
     if (_file)
         fclose(_file);
 
-    _file = NULL;
+    _file = nullptr;
 }
 
 PacketLog* PacketLog::instance()
@@ -54,12 +54,14 @@ void PacketLog::Initialize()
 
 void PacketLog::LogPacket(WorldPacket const& packet, Direction direction)
 {
+    std::lock_guard<std::mutex> lock(_logPacketLock);
+
     ByteBuffer data(4+4+4+1+packet.size());
     uint32 opcode = direction == CLIENT_TO_SERVER ? const_cast<WorldPacket&>(packet).GetReceivedOpcode() : serverOpcodeTable[packet.GetOpcode()]->OpcodeNumber;
 
     data << int32(opcode);
     data << int32(packet.size());
-    data << uint32(time(NULL));
+    data << uint32(time(nullptr));
     data << uint8(direction);
 
     for (uint32 i = 0; i < packet.size(); i++)
