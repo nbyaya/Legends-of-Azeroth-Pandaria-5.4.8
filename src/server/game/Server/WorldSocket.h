@@ -135,13 +135,13 @@ class WorldSocket : public WorldHandler
             ACE_Reactor_Mask = ACE_Event_Handler::ALL_EVENTS_MASK);
 
         /// Called by WorldSocketMgr/ReactorRunnable.
-        int Update(void);
+        int Update();
 
     private:
         /// Helper functions for processing incoming data.
-        int handle_input_header(void);
-        int handle_input_payload(void);
-        int handle_input_missing_data(void);
+        int ReadHeaderHandler();
+        int handle_input_payload();
+        int handle_input_missing_data();
 
         /// Help functions to mark/unmark the socket for output.
         /// @param g the guard is for m_OutBufferLock, the function will release it
@@ -159,9 +159,6 @@ class WorldSocket : public WorldHandler
         int HandleAuthSession(WorldPacket& recvPacket);
         void HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSession, PreparedQueryResult result);
 
-        /// Called by ProcessIncoming() on CMSG_PING.
-        int HandlePing(WorldPacket& recvPacket);
-
         /// Called by MSG_VERIFY_CONNECTIVITY_RESPONSE
         int HandleSendAuthSession();
 
@@ -176,25 +173,9 @@ class WorldSocket : public WorldHandler
         //ReadDataHandlerResult ReadDataHandler();    
 
     private:
-        void SendAuthResponseError(uint8);
-        /// Time in which the last ping was received
-        TimePoint m_LastPingTime;
-
-        /// Keep track of over-speed pings, to prevent ping flood.
-        uint32 m_OverSpeedPings;
-
+        
         /// Address of the remote peer
         std::string m_Address;
-
-        std::array<uint8, 4> _authSeed;
-        /// Class used for managing encryption of the headers
-        AuthCrypt m_Crypt;
-
-        /// Mutex lock to protect m_Session
-        std::mutex m_SessionLock;
-
-        /// Session to which received packets are routed
-        WorldSession* m_Session;
 
         /// here are stored the fragments of the received data
         WorldPacket* m_RecvWPct;
@@ -219,6 +200,19 @@ class WorldSocket : public WorldHandler
 
         /// True if the socket is registered with the reactor for output
         bool m_OutActive;
+
+        void SendAuthResponseError(uint8 code);
+        bool HandlePing(WorldPacket& recvPacket);
+
+        std::array<uint8, 4> _authSeed;
+        AuthCrypt _authCrypt;
+
+        TimePoint _LastPingTime;
+        uint32 _OverSpeedPings;
+
+        std::mutex _worldSessionLock;
+        WorldSession* _worldSession;
+        bool _authed;
 
         QueryCallbackProcessor _queryProcessor;
         std::string _ipCountry;

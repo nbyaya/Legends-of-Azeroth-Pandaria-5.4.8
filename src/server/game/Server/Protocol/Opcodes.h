@@ -1502,22 +1502,17 @@ struct OpcodeHandler
 class OpcodeTable
 {
 public:
-    OpcodeTable()
-    {
-        memset(_internalTable, 0, sizeof(_internalTable));
-        memset(_opcodeTable, 0, sizeof(_opcodeTable));
-    }
+    OpcodeTable();
 
-    ~OpcodeTable()
-    {
-        for (uint16 i = 0; i < NUM_OPCODE_HANDLERS; ++i)
-            delete _internalTable[i];
-    }
+    OpcodeTable(OpcodeTable const&) = delete;
+    OpcodeTable& operator=(OpcodeTable const&) = delete;
+
+    ~OpcodeTable();
 
     void InitializeClientTable();
     void InitializeServerTable();
 
-    inline Opcodes GetOpcodeByNumber(uint16 number) { return _opcodeTable[number]; }
+    inline Opcodes GetOpcodeByNumber(uint16 number) { return static_cast<Opcodes>(number); }
 
     OpcodeHandler const* operator[](Opcodes index) const
     {
@@ -1528,14 +1523,7 @@ private:
     template<bool isInValidRange, bool isNonZero>
     void ValidateAndSetOpcode(uint16 opcode, uint16 opcodeNumber, char const* name, SessionStatus status, PacketProcessing processing, pOpcodeHandler handler = 0);
 
-    // Prevent copying this structure
-    OpcodeTable(OpcodeTable const&);
-    OpcodeTable& operator=(OpcodeTable const&);
-
     OpcodeHandler* _internalTable[NUM_OPCODE_HANDLERS];
-
-    // Store opcode / number list - for speed
-    Opcodes _opcodeTable[NUM_OPCODE_HANDLERS];
 };
 
 extern OpcodeTable serverOpcodeTable;
@@ -1545,7 +1533,7 @@ void InitializeClientTable();
 void InitializeServerTable();
 
 /// Lookup opcode name for human understandable logging
-std::string GetOpcodeNameForLogging(Opcodes id, bool isServerOpcode, uint16 opcodeNumber = 0);
+std::string GetOpcodeNameForLogging(Opcodes id, bool isServerOpcode);
 
 #endif
 /// @}

@@ -1421,8 +1421,6 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_TRANSPORT_PREFER_SERVER_WORLD_POSITION] = sConfigMgr->GetBoolDefault("Transport.PreferServerWorldPosition", true);
     m_bool_configs[CONFIG_TRANSPORT_LOAD_GRIDS] = sConfigMgr->GetBoolDefault("Transport.LoadGrids", true);
 
-    m_bool_configs[CONFIG_DEBUG_OPCODES] = false;
-
     m_bool_configs[CONFIG_ANTICHEAT_ENABLE] = true;
     m_int_configs[CONFIG_ANTICHEAT_REPORTS_INGAME_NOTIFICATION] = 70;
     m_int_configs[CONFIG_ANTICHEAT_DETECTIONS_ENABLED] = 31;

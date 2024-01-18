@@ -571,15 +571,38 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket& recvData)
     data << textID;
     data << uint32(64);                                 // size (8 * 4) * 2
 
-    data << float(pGossip ? pGossip->Options[0].Probability : 0);
-    for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+    // hackfix
+    if (!pGossip)
+    {
         data << float(0);
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << float(0);
 
-    //data << textID;    // should be a broadcast id   
-    data << pGossip->Options[0].BroadcastTextID;
-                        
-    for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
-        data << uint32(0);
+        data << uint32(1);
+                            
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << uint32(0); 
+    }
+    else
+    {
+        data << float(pGossip->Options[0].Probability);
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << float(0);
+
+        //data << textID;    // should be a broadcast id   
+        if (pGossip->Options[0].BroadcastTextID > 0)
+        {
+            data << pGossip->Options[0].BroadcastTextID;
+        }
+        else
+        {
+            data << uint32(1);
+        }
+                            
+        for (int i = 0; i < MAX_GOSSIP_TEXT_OPTIONS - 1; i++)
+            data << uint32(0); 
+
+    }
 
     data.WriteBit(1);                                   // has data
     data.FlushBits();

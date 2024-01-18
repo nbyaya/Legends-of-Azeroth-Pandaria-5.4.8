@@ -293,11 +293,12 @@ class boss_hoptallus : public CreatureScript
 
         enum Talks
         {
-            TALK_AGGRO,
-            TALK_FURLWIND,
-            TALK_CARROT_BREATH,
-            TALK_DEATH,
-            TALK_SCREECH
+            TALK_AGGRO              = 0, // Oh yeah!
+            TALK_FURLWIND           = 1, // Gonna spins around!
+            TALK_CARROT_BREATH      = 2, // Urp... eats too many carrots...
+            TALK_DEATH              = 3, // You have... turnip... for a head...
+            TALK_SCREECH            = 4, // Hoptallus lets out a loud screech! The virmen are coming!
+            TALK_SLAY               = 5  // You die!
         };
 
         struct boss_hoptallusAI : public BossAI
@@ -436,6 +437,11 @@ class boss_hoptallus : public CreatureScript
                 me->ClearUnitState(UNIT_STATE_CANNOT_TURN);
                 me->AttackStop();
                 me->GetMotionMaster()->MovePoint(194, hoptallusHopPos);
+            }
+
+            void KilledUnit(Unit* victim) override
+            {
+                Talk(TALK_SLAY);
             }
 
             void JustDied(Unit* killer) override

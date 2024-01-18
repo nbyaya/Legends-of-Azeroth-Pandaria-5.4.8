@@ -21,6 +21,18 @@
 OpcodeTable serverOpcodeTable;
 OpcodeTable clientOpcodeTable;
 
+
+OpcodeTable::OpcodeTable()
+{
+    memset(_internalTable, 0, sizeof(_internalTable));
+}
+
+OpcodeTable::~OpcodeTable()
+{
+    for (uint16 i = 0; i < NUM_OPCODE_HANDLERS; ++i)
+        delete _internalTable[i];
+}
+
 template<bool isInValidRange, bool isNonZero>
 void OpcodeTable::ValidateAndSetOpcode(uint16 /*opcode*/, uint16 /*opcodeNumber*/, char const* /*name*/, SessionStatus /*status*/, PacketProcessing /*processing*/, pOpcodeHandler /*handler*/)
 {
@@ -36,8 +48,7 @@ void OpcodeTable::ValidateAndSetOpcode<true, true>(uint16 opcode, uint16 opcodeN
         return;
     }
 
-    _internalTable[opcode] = new OpcodeHandler(opcodeNumber, name, status, processing, handler);
-    _opcodeTable[opcodeNumber] = (Opcodes)opcode;
+    _internalTable[opcode] = new OpcodeHandler(opcode, name, status, processing, handler);
 }
 
 template<>
@@ -1489,10 +1500,10 @@ void OpcodeTable::InitializeServerTable()
 #undef DEFINE_OPCODE_HANDLER
 };
 
-std::string GetOpcodeNameForLogging(Opcodes id, bool isServerOpcode, uint16 opcodeNumber)
+std::string GetOpcodeNameForLogging(Opcodes id, bool isServerOpcode)
 {
     OpcodeTable& table = isServerOpcode ? serverOpcodeTable : clientOpcodeTable;
-    uint16 opcode = opcodeNumber ? opcodeNumber : uint16(id);
+    uint16 opcode = uint16(id);
 
     std::ostringstream ss;
     ss << '[';
@@ -1502,7 +1513,6 @@ std::string GetOpcodeNameForLogging(Opcodes id, bool isServerOpcode, uint16 opco
         if (OpcodeHandler const* handler = table[id])
         {
             ss << handler->Name;
-            opcode = handler->OpcodeNumber;
             if (opcode & COMPRESSED_OPCODE_MASK)
                 ss << "_COMPRESSED";
         }

@@ -20,6 +20,8 @@
 
 #include "Common.h"
 
+#include <mutex>
+
 enum Direction
 {
     CLIENT_TO_SERVER,
@@ -28,17 +30,20 @@ enum Direction
 
 class WorldPacket;
 
-class PacketLog
+class TC_GAME_API PacketLog
 {
 
     private:
         PacketLog();
         ~PacketLog();
+        std::mutex _logPacketLock;
+        std::once_flag _initializeFlag;        
 
     public:
         static PacketLog* instance();
+
         void Initialize();
-        bool CanLogPacket() const { return (_file != NULL); }
+        bool CanLogPacket() const { return (_file != nullptr); }
         void LogPacket(WorldPacket const& packet, Direction direction);
 
     private:
