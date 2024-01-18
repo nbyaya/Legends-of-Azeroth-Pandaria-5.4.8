@@ -85,8 +85,8 @@ INSERT INTO `waypoint_data` (`id`, `point`, `position_x`, `position_y`, `positio
 
 UPDATE `creature` SET `position_x`= -367.4618, `position_y`= 1060.483, `position_z`= 21.78117, `orientation`= 0, `wander_distance`= 0, `movement_type`= 2 WHERE `guid`= @CGUID;
 DELETE FROM `creature_addon` WHERE `guid`= @CGUID;
-INSERT INTO `creature_addon` (`guid`, `path_id`, `bytes2`) VALUES
-(@CGUID, @PATH, 1);
+INSERT INTO `creature_addon` (`guid`, `path_id`, `bytes2`, `health_limit_pct`) VALUES
+(@CGUID, @PATH, 1, 0);
 
 -- Edna Mullby (1286)
 DELETE FROM `creature_text` WHERE `CreatureID`=1286;

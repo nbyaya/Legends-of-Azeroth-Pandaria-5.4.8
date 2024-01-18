@@ -6,8 +6,8 @@ INSERT INTO `creature` (`guid`, `id`, `map`, `zoneId`, `areaId`, `spawnMask`, `p
 (@CGUID+0, 44806, 0, 1519, 4411, 1, 1, 0, 0, -8543.591796875, 1268.9930419921875, 4.626535415649414062, 5.323254108428955078, 120, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0); -- Fargo Flintlocke (Area: Stormwind Harbor - Difficulty: 0) CreateObject1 (Auras: 93308 - Fargo Flintlocke Quest Invis B)
 
 DELETE FROM `creature_addon` WHERE `guid` IN (@CGUID);
-INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`) VALUES 
-(@CGUID+0, 0, 0, 0, 1, 0, 0, 0, 0, '93308'); -- Fargo Flintlocke
+INSERT INTO `creature_addon` (`guid`, `path_id`, `mount`, `bytes1`, `bytes2`, `emote`, `ai_anim_kit`, `movement_anim_kit`, `melee_anim_kit`, `auras`, `health_limit_pct`) VALUES 
+(@CGUID+0, 0, 0, 0, 1, 0, 0, 0, 0, '93308', 0); -- Fargo Flintlocke
 
 DELETE FROM `npc_spellclick_spells` WHERE `npc_entry`=50262 AND `spell_id`=93320;
 INSERT INTO `npc_spellclick_spells` (`npc_entry`, `spell_id`, `cast_flags`, `user_type`) VALUES
